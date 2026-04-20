@@ -33,15 +33,41 @@ export interface ConversionItem {
   progress: number;
   quality: number; // 0.1 – 1.0
   outputUrl: string | null;
+  outputSize: number | null;
+  formatSizes: Record<string, number>;
+  sizesLoading: boolean;
   thumbnailUrl: string | null;
   error: string | null;
 }
 
+// ── Shared image constants ───────────────────────────────────────────
+const imageMimeMap: Record<string, string> = {
+  png: "image/png",
+  jpeg: "image/jpeg",
+  jpg: "image/jpeg",
+  jfif: "image/jpeg",
+  webp: "image/webp",
+  gif: "image/gif",
+  bmp: "image/bmp",
+  tiff: "image/tiff",
+  avif: "image/avif",
+  heic: "image/heic",
+  heif: "image/heif",
+  jxl: "image/jxl",
+  ico: "image/x-icon",
+  svg: "image/svg+xml",
+  apng: "image/apng",
+};
+const imageQualityFormats = new Set(["jpeg", "jpg", "webp", "avif", "jfif", "heic", "heif", "jxl"]);
+
 // ── Hook ─────────────────────────────────────────────────────────────
 export function useConverter() {
   const [items, setItems] = useState<ConversionItem[]>([]);
+  const itemsRef = useRef<ConversionItem[]>([]);
+  itemsRef.current = items;
   const ffmpegRef = useRef<FFmpeg | null>(null);
   const loadedRef = useRef(false);
+  const convertItemRef = useRef<(id: string, overrideFormat?: string, overrideQuality?: number) => Promise<void>>(async () => {});
 
   const getFFmpeg = useCallback(async () => {
     if (ffmpegRef.current && loadedRef.current) return ffmpegRef.current;
@@ -95,13 +121,30 @@ export function useConverter() {
         progress: 0,
         quality: 0.92,
         outputUrl: null,
+        outputSize: null,
+        formatSizes: {},
+        sizesLoading: category === "image",
         thumbnailUrl: category === "image" ? URL.createObjectURL(file) : null,
         error: null,
       };
     });
 
     setItems((prev) => [...prev, ...newItems]);
-  }, []);
+
+    // Precompute sizes for image files
+    for (const item of newItems) {
+      if (item.category === "image") {
+        precomputeImageSizes(item.file, item.availableFormats, item.quality, item.sourceExtension)
+          .then((sizes) => updateItem(item.id, { formatSizes: sizes, sizesLoading: false }))
+          .catch(() => updateItem(item.id, { sizesLoading: false }));
+      }
+    }
+
+    // Auto-convert each new file to its default target format
+    for (const item of newItems) {
+      convertItemRef.current(item.id);
+    }
+  }, [updateItem]);
 
   // ── Change target format ─────────────────────────────────────────
   const changeFormat = useCallback((id: string, format: string) => {
@@ -116,57 +159,88 @@ export function useConverter() {
 
   // ── Change quality ───────────────────────────────────────────────
   const changeQuality = useCallback((id: string, quality: number) => {
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, quality } : i)),
-    );
-  }, []);
+    setItems((prev) => {
+      const item = prev.find((i) => i.id === id);
+      if (item && item.category === "image") {
+        // Recompute format sizes with new quality
+        precomputeImageSizes(item.file, item.availableFormats, quality, item.sourceExtension)
+          .then((sizes) => updateItem(id, { formatSizes: sizes }))
+          .catch(() => {});
+      }
+      return prev.map((i) => (i.id === id ? { ...i, quality } : i));
+    });
+  }, [updateItem]);
 
   // ── Convert a single item ────────────────────────────────────────
   const convertItem = useCallback(
-    async (id: string, overrideFormat?: string) => {
-      let snapshot: ConversionItem | undefined;
-      setItems((prev) => {
-        const item = prev.find((i) => i.id === id);
-        if (!item) return prev;
-        if (overrideFormat) {
-          snapshot = { ...item, targetFormat: overrideFormat };
-          return prev.map((i) =>
-            i.id === id ? { ...i, targetFormat: overrideFormat } : i,
-          );
-        }
-        snapshot = item;
-        return prev;
-      });
-      if (!snapshot || snapshot.status === "converting") return;
+    async (id: string, overrideFormat?: string, overrideQuality?: number) => {
+      // Read current item directly from ref (always fresh)
+      const item = itemsRef.current.find((i) => i.id === id);
+      if (!item || item.status === "converting") return;
 
-      // Revoke previous output URL if re-converting
+      // Build snapshot with overrides
+      const snapshot = { ...item };
+      if (overrideFormat) snapshot.targetFormat = overrideFormat;
+      if (overrideQuality !== undefined) snapshot.quality = overrideQuality;
+
+      // Persist overrides + set converting
       if (snapshot.outputUrl) URL.revokeObjectURL(snapshot.outputUrl);
-      updateItem(id, { status: "converting", progress: 0, error: null, outputUrl: null });
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === id
+            ? {
+                ...i,
+                targetFormat: snapshot.targetFormat,
+                quality: snapshot.quality,
+                status: "converting" as const,
+                progress: 0,
+                error: null,
+                outputUrl: null,
+                outputSize: null,
+              }
+            : i,
+        ),
+      );
       trackConversionStarted(snapshot.sourceExtension, snapshot.targetFormat);
       const start = performance.now();
 
       try {
         let url: string;
+        let outputSize: number;
         const onProgress = (p: number) => updateItem(id, { progress: p });
 
         if (snapshot.category === "image") {
-          url = await convertImage(snapshot, onProgress);
+          const blob = await convertImage(snapshot, onProgress);
+          url = URL.createObjectURL(blob);
+          outputSize = blob.size;
         } else if (snapshot.category === "code") {
           url = await convertTextData(snapshot, onProgress);
+          const resp = await fetch(url);
+          outputSize = (await resp.blob()).size;
         } else if (
           snapshot.category === "video" ||
           snapshot.category === "audio"
         ) {
           const ffmpeg = await getFFmpeg();
           url = await convertMedia(ffmpeg, snapshot, onProgress);
+          const resp = await fetch(url);
+          outputSize = (await resp.blob()).size;
         } else {
-          // document, spreadsheet, presentation, ebook, font, vector, archive
-          // For client-side: read as blob and re-tag (basic pass-through)
-          // Complex conversions (docx→pdf, etc.) would need a server API
           url = await convertGeneric(snapshot, onProgress);
+          const resp = await fetch(url);
+          outputSize = (await resp.blob()).size;
         }
 
-        updateItem(id, { status: "done", progress: 100, outputUrl: url });
+        setItems((prev) => prev.map((i) => {
+          if (i.id !== id) return i;
+          return {
+            ...i,
+            status: "done" as const,
+            progress: 100,
+            outputUrl: url,
+            outputSize,
+          };
+        }));
         trackConversionFinished(
           snapshot.sourceExtension,
           snapshot.targetFormat,
@@ -187,6 +261,9 @@ export function useConverter() {
     },
     [getFFmpeg, updateItem],
   );
+
+  // Keep ref in sync
+  convertItemRef.current = convertItem;
 
   // ── Convert all pending ──────────────────────────────────────────
   const convertAll = useCallback(async () => {
@@ -261,7 +338,7 @@ export function useConverter() {
 async function convertImage(
   item: ConversionItem,
   onProgress: (p: number) => void,
-): Promise<string> {
+): Promise<Blob> {
   onProgress(10);
   const bitmap = await createImageBitmap(item.file);
   onProgress(40);
@@ -271,20 +348,47 @@ async function convertImage(
   ctx.drawImage(bitmap, 0, 0);
   onProgress(60);
 
-  const mimeMap: Record<string, string> = {
-    png: "image/png",
-    jpeg: "image/jpeg",
-    webp: "image/webp",
-    gif: "image/gif",
-    bmp: "image/bmp",
-    tiff: "image/tiff",
-    avif: "image/avif",
-  };
-  const mime = mimeMap[item.targetFormat] ?? "image/png";
-  const blob = await canvas.convertToBlob({ type: mime, quality: item.quality });
+  const mime = imageMimeMap[item.targetFormat] ?? "image/png";
+  const blobOpts: ImageEncodeOptions = { type: mime };
+  if (imageQualityFormats.has(item.targetFormat)) {
+    blobOpts.quality = item.quality;
+  }
+  const blob = await canvas.convertToBlob(blobOpts);
   onProgress(90);
 
-  return URL.createObjectURL(blob);
+  return blob;
+}
+
+// ── Precompute image sizes for all formats ───────────────────────────
+async function precomputeImageSizes(
+  file: File,
+  formats: FormatOption[],
+  quality: number,
+  sourceExt: string,
+): Promise<Record<string, number>> {
+  const bitmap = await createImageBitmap(file);
+  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(bitmap, 0, 0);
+
+  const sizes: Record<string, number> = {};
+  for (const format of formats) {
+    if (format.value === sourceExt) continue;
+    try {
+      const mime = imageMimeMap[format.value] ?? "image/png";
+      const opts: ImageEncodeOptions = { type: mime };
+      if (imageQualityFormats.has(format.value)) {
+        opts.quality = quality;
+      }
+      const blob = await canvas.convertToBlob(opts);
+      sizes[format.value] = blob.size;
+    } catch {
+      // Format not supported by browser
+    }
+  }
+
+  bitmap.close();
+  return sizes;
 }
 
 // ── Media conversion (ffmpeg.wasm) ───────────────────────────────────

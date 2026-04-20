@@ -17,6 +17,7 @@ import {
   Archive,
   Code,
   Download,
+  ArrowLeft,
   Shield,
   Zap,
   Globe,
@@ -198,9 +199,19 @@ export default function Home() {
 
             {/* Actions bar */}
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {items.length} file{items.length > 1 ? "s" : ""}
-              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={clearAll}
+                  className="h-8 w-8 cursor-pointer text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  {items.length} file{items.length > 1 ? "s" : ""}
+                </p>
+              </div>
               <div className="flex gap-2">
                 {hasDone && (
                   <Button
@@ -224,7 +235,7 @@ export default function Home() {
                     item={item}
                     onChangeFormat={(fmt) => changeFormat(item.id, fmt)}
                     onChangeQuality={(q) => changeQuality(item.id, q)}
-                    onConvert={(fmt) => convertItem(item.id, fmt)}
+                    onConvert={(fmt, quality) => convertItem(item.id, fmt, quality)}
                     onRemove={() => removeItem(item.id)}
                   />
                 ))}
