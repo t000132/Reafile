@@ -107,7 +107,7 @@ export default function ConvertPage() {
                 isDragActive
                   ? "border-violet-500/60 bg-violet-500/[0.06] dark:border-violet-400/50"
                   : "border-border hover:border-violet-400/40 hover:bg-accent/50"
-              } px-6 py-14 text-center`}
+              } px-6 py-24 text-center`}
             >
               <input {...getInputProps()} />
 
@@ -120,7 +120,15 @@ export default function ConvertPage() {
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="flex flex-col items-center"
               >
-                <div
+                <motion.div
+                  animate={{
+                    y: [0, -8, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                   className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border transition-colors ${
                     isDragActive
                       ? "border-violet-400/30 bg-violet-500/10 text-violet-500"
@@ -128,7 +136,7 @@ export default function ConvertPage() {
                   }`}
                 >
                   <FileUp className="h-6 w-6" />
-                </div>
+                </motion.div>
 
                 <p className="text-base font-medium">
                   {isDragActive
@@ -162,24 +170,6 @@ export default function ConvertPage() {
                 >
                   <Icon className={`h-3 w-3 ${color}`} />
                   {label}
-                </div>
-              ))}
-            </div>
-
-            {/* ── Feature chips — inline, no scroll ──────────── */}
-            <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {[
-                { icon: Lock, label: "100% Private", color: "text-violet-500" },
-                { icon: Zap, label: "Lightning Fast", color: "text-blue-500" },
-                { icon: Globe, label: "120+ Formats", color: "text-emerald-500" },
-                { icon: Shield, label: "Free Forever", color: "text-amber-500" },
-              ].map(({ icon: Icon, label, color }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-2 rounded-xl border border-border/50 bg-muted/30 px-3 py-2.5"
-                >
-                  <Icon className={`h-4 w-4 shrink-0 ${color}`} />
-                  <span className="text-xs font-medium">{label}</span>
                 </div>
               ))}
             </div>

@@ -33,12 +33,14 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} antialiased overflow-x-hidden`}
       suppressHydrationWarning
     >
-      <body className="flex min-h-dvh flex-col bg-background text-foreground overflow-x-hidden">
+      <body className="flex h-dvh flex-col bg-background text-foreground overflow-x-hidden overflow-y-hidden">
         <ThemeProvider>
           <PostHogProvider>
             <Header />
-            <main className="flex flex-1 flex-col">{children}</main>
-            <Footer />
+            <main className="flex flex-1 flex-col overflow-y-auto">
+              {children}
+              <Footer />
+            </main>
           </PostHogProvider>
         </ThemeProvider>
       </body>
