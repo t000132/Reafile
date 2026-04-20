@@ -29,7 +29,7 @@ interface ConversionCardProps {
   item: ConversionItem;
   onChangeFormat: (format: string) => void;
   onChangeQuality: (quality: number) => void;
-  onConvert: () => void;
+  onConvert: (format?: string) => void;
   onRemove: () => void;
 }
 
@@ -79,10 +79,8 @@ export function ConversionCard({
   const isError = item.status === "error";
 
   const handleFormatClick = (format: string) => {
-    if (isConverting || isDone) return;
-    onChangeFormat(format);
-    // Auto-convert after a brief delay to allow state update
-    setTimeout(() => onConvert(), 50);
+    if (isConverting) return;
+    onConvert(format);
   };
 
   return (
@@ -133,31 +131,38 @@ export function ConversionCard({
           size="icon"
           variant="ghost"
           onClick={onRemove}
-          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+          className="h-8 w-8 shrink-0 cursor-pointer text-muted-foreground hover:text-destructive"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
 
-      {/* Format Chips */}
-      {!isDone && !isConverting && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {item.availableFormats.map((format) => (
+      {/* Format Chips — always visible */}
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {item.availableFormats.map((format) => {
+          const isSource = format.value === item.sourceExtension;
+          const isActive = isDone && format.value === item.targetFormat;
+          const isDisabled = isSource || isConverting;
+          return (
             <button
               key={format.value}
               onClick={() => handleFormatClick(format.value)}
-              disabled={format.value === item.sourceExtension}
-              className={`cursor-pointer rounded-lg border px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide transition-all ${
-                format.value === item.sourceExtension
-                  ? "cursor-not-allowed border-border/40 bg-muted/40 text-muted-foreground/40"
-                  : "border-border/60 bg-muted/30 text-foreground hover:border-violet-400/60 hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400"
+              disabled={isDisabled}
+              className={`rounded-lg border px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide transition-all ${
+                isActive
+                  ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : isSource
+                    ? "cursor-not-allowed border-border/40 bg-muted/40 text-muted-foreground/40"
+                    : isConverting
+                      ? "cursor-not-allowed border-border/40 bg-muted/30 text-muted-foreground/60"
+                      : "cursor-pointer border-border/60 bg-muted/30 text-foreground hover:border-violet-400/60 hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400"
               }`}
             >
               {format.label}
             </button>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
 
       {/* Quality slider for image / video / audio */}
       {!isDone &&
@@ -206,7 +211,7 @@ export function ConversionCard({
           <Button
             size="sm"
             variant="outline"
-            onClick={onConvert}
+            onClick={() => onConvert()}
             className="h-7 gap-1.5 text-xs"
           >
             <RotateCcw className="h-3 w-3" /> Retry
@@ -214,17 +219,44 @@ export function ConversionCard({
         </div>
       )}
 
-      {/* Download button */}
+      {/* Download — show file info in target format + download button */}
       {isDone && item.outputUrl && (
-        <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
-          <p className="flex items-center gap-1.5 text-xs text-emerald-500 dark:text-emerald-400">
-            <Check className="h-3.5 w-3.5" />
-            Converted to {item.targetFormat.toUpperCase()}
-          </p>
+        <div className="mt-3 flex items-center gap-3 border-t border-border/40 pt-3">
+          {/* Result file info */}
+          {item.thumbnailUrl ? (
+            <img
+              src={item.thumbnailUrl}
+              alt=""
+              className="h-10 w-10 shrink-0 rounded-lg border border-emerald-500/30 object-cover"
+            />
+          ) : (
+            <div
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400`}
+            >
+              {categoryIcon[item.category]}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="truncate text-sm font-medium">
+                {item.file.name.replace(/\.[^.]+$/, "")}.{item.targetFormat}
+              </p>
+              <Badge
+                variant="outline"
+                className="shrink-0 border-emerald-500/30 text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400"
+              >
+                {item.targetFormat}
+              </Badge>
+            </div>
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-emerald-500 dark:text-emerald-400">
+              <Check className="h-3 w-3" />
+              Converted successfully
+            </p>
+          </div>
           <a
             href={item.outputUrl}
             download={`${item.file.name.replace(/\.[^.]+$/, "")}.${item.targetFormat}`}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+            className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/80"
           >
             <Download className="h-3.5 w-3.5" /> Download
           </a>

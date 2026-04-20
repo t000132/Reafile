@@ -4,13 +4,11 @@ import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight,
   FileUp,
   ImageIcon,
   Film,
   Music,
   FileText,
-  Trash2,
   Table,
   Presentation,
   BookOpen,
@@ -35,7 +33,6 @@ export default function Home() {
     changeFormat,
     changeQuality,
     convertItem,
-    convertAll,
     removeItem,
     clearAll,
     downloadAllAsZip,
@@ -51,9 +48,6 @@ export default function Home() {
     multiple: true,
   });
 
-  const hasPending = items.some(
-    (i) => i.status === "pending" || i.status === "error",
-  );
   const hasDone = items.some((i) => i.status === "done");
 
   return (
@@ -208,33 +202,16 @@ export default function Home() {
                 {items.length} file{items.length > 1 ? "s" : ""}
               </p>
               <div className="flex gap-2">
-                {hasPending && (
-                  <Button
-                    size="sm"
-                    onClick={convertAll}
-                    className="h-8 gap-1.5 text-xs"
-                  >
-                    Convert All <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
-                )}
                 {hasDone && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={downloadAllAsZip}
-                    className="h-8 gap-1.5 text-xs"
+                    className="h-8 cursor-pointer gap-1.5 text-xs"
                   >
                     <Download className="h-3.5 w-3.5" /> ZIP
                   </Button>
                 )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={clearAll}
-                  className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="h-3.5 w-3.5" /> Clear
-                </Button>
               </div>
             </div>
 
@@ -247,7 +224,7 @@ export default function Home() {
                     item={item}
                     onChangeFormat={(fmt) => changeFormat(item.id, fmt)}
                     onChangeQuality={(q) => changeQuality(item.id, q)}
-                    onConvert={() => convertItem(item.id)}
+                    onConvert={(fmt) => convertItem(item.id, fmt)}
                     onRemove={() => removeItem(item.id)}
                   />
                 ))}

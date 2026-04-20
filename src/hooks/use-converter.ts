@@ -123,15 +123,25 @@ export function useConverter() {
 
   // ── Convert a single item ────────────────────────────────────────
   const convertItem = useCallback(
-    async (id: string) => {
+    async (id: string, overrideFormat?: string) => {
       let snapshot: ConversionItem | undefined;
       setItems((prev) => {
-        snapshot = prev.find((i) => i.id === id);
+        const item = prev.find((i) => i.id === id);
+        if (!item) return prev;
+        if (overrideFormat) {
+          snapshot = { ...item, targetFormat: overrideFormat };
+          return prev.map((i) =>
+            i.id === id ? { ...i, targetFormat: overrideFormat } : i,
+          );
+        }
+        snapshot = item;
         return prev;
       });
       if (!snapshot || snapshot.status === "converting") return;
 
-      updateItem(id, { status: "converting", progress: 0, error: null });
+      // Revoke previous output URL if re-converting
+      if (snapshot.outputUrl) URL.revokeObjectURL(snapshot.outputUrl);
+      updateItem(id, { status: "converting", progress: 0, error: null, outputUrl: null });
       trackConversionStarted(snapshot.sourceExtension, snapshot.targetFormat);
       const start = performance.now();
 
