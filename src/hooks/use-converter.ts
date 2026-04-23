@@ -67,6 +67,7 @@ export function useConverter() {
   itemsRef.current = items;
   const ffmpegRef = useRef<FFmpeg | null>(null);
   const loadedRef = useRef(false);
+  const sizeRecomputeTokenRef = useRef<Record<string, number>>({});
   const convertItemRef = useRef<(id: string, overrideFormat?: string, overrideQuality?: number) => Promise<void>>(async () => {});
 
   const getFFmpeg = useCallback(async () => {
@@ -95,6 +96,29 @@ export function useConverter() {
       );
     },
     [],
+  );
+
+  const recomputeImageSizes = useCallback(
+    async (item: ConversionItem, quality: number) => {
+      const token = (sizeRecomputeTokenRef.current[item.id] ?? 0) + 1;
+      sizeRecomputeTokenRef.current[item.id] = token;
+
+      try {
+        const sizes = await precomputeImageSizes(
+          item.file,
+          item.availableFormats,
+          quality,
+          item.sourceExtension,
+        );
+
+        if (sizeRecomputeTokenRef.current[item.id] !== token) return;
+        updateItem(item.id, { formatSizes: sizes, sizesLoading: false });
+      } catch {
+        if (sizeRecomputeTokenRef.current[item.id] !== token) return;
+        updateItem(item.id, { sizesLoading: false });
+      }
+    },
+    [updateItem],
   );
 
   // ── Add files ────────────────────────────────────────────────────
@@ -134,9 +158,7 @@ export function useConverter() {
     // Precompute sizes for image files
     for (const item of newItems) {
       if (item.category === "image") {
-        precomputeImageSizes(item.file, item.availableFormats, item.quality, item.sourceExtension)
-          .then((sizes) => updateItem(item.id, { formatSizes: sizes, sizesLoading: false }))
-          .catch(() => updateItem(item.id, { sizesLoading: false }));
+        recomputeImageSizes(item, item.quality);
       }
     }
 
@@ -144,7 +166,7 @@ export function useConverter() {
     for (const item of newItems) {
       convertItemRef.current(item.id);
     }
-  }, [updateItem]);
+  }, [recomputeImageSizes]);
 
   // ── Change target format ─────────────────────────────────────────
   const changeFormat = useCallback((id: string, format: string) => {
@@ -159,17 +181,18 @@ export function useConverter() {
 
   // ── Change quality ───────────────────────────────────────────────
   const changeQuality = useCallback((id: string, quality: number) => {
-    setItems((prev) => {
-      const item = prev.find((i) => i.id === id);
-      if (item && item.category === "image") {
-        // Recompute format sizes with new quality
-        precomputeImageSizes(item.file, item.availableFormats, quality, item.sourceExtension)
-          .then((sizes) => updateItem(id, { formatSizes: sizes }))
-          .catch(() => {});
-      }
-      return prev.map((i) => (i.id === id ? { ...i, quality } : i));
-    });
-  }, [updateItem]);
+    const item = itemsRef.current.find((i) => i.id === id);
+    if (!item) return;
+
+    // Show loader immediately while size estimates refresh.
+    if (item.category === "image") {
+      updateItem(id, { quality, sizesLoading: true });
+      void recomputeImageSizes(item, quality);
+      return;
+    }
+
+    updateItem(id, { quality });
+  }, [recomputeImageSizes, updateItem]);
 
   // ── Convert a single item ────────────────────────────────────────
   const convertItem = useCallback(

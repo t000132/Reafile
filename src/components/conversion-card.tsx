@@ -258,8 +258,10 @@ export function ConversionCard({
                   </Badge>
                 </div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {item.outputSize != null
-                    ? formatFileSize(item.outputSize)
+                  {item.sizesLoading
+                    ? <span className="inline-block h-3 w-10 animate-pulse rounded bg-muted align-middle" />
+                    : item.outputSize != null
+                      ? formatFileSize(item.outputSize)
                     : item.formatSizes[item.targetFormat] != null
                       ? formatFileSize(item.formatSizes[item.targetFormat])
                       : <span className="inline-block h-3 w-10 animate-pulse rounded bg-muted" />
