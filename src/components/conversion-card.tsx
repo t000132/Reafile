@@ -82,6 +82,11 @@ export function ConversionCard({
   const isDone = item.status === "done";
   const isError = item.status === "error";
 
+  // Keep the last non-null outputUrl so the right panel never flickers away
+  const lastOutputUrlRef = useRef<string | null>(item.outputUrl);
+  if (item.outputUrl !== null) lastOutputUrlRef.current = item.outputUrl;
+  const displayOutputUrl = item.outputUrl ?? lastOutputUrlRef.current;
+
   const handleFormatClick = (format: string) => {
     if (isConverting) return;
     onConvert(format);
@@ -110,7 +115,7 @@ export function ConversionCard({
       {/* Two-column layout: Left (source + chips) | Right (result when done) */}
       <div className="flex gap-4">
         {/* ── Left column: source + format chips ── */}
-        <div className={`min-w-0 ${isDone && item.outputUrl ? "w-1/2" : "flex-1"}`}>
+        <div className={`min-w-0 ${displayOutputUrl ? "w-1/2" : "flex-1"}`}>
           {/* Source header */}
           <div className="flex items-start gap-3">
             {/* Source Icon / Thumbnail */}
@@ -161,8 +166,7 @@ export function ConversionCard({
           <div className="mt-3 flex flex-wrap gap-1.5">
             {item.availableFormats.map((format) => {
               const isSource = format.value === item.sourceExtension;
-              const isActive = isDone && format.value === item.targetFormat;
-              const isSelected = isConverting && format.value === item.targetFormat;
+              const isTarget = !isSource && format.value === item.targetFormat;
               const isDisabled = isSource || isConverting;
               const chipSize = item.formatSizes[format.value];
               return (
@@ -170,38 +174,26 @@ export function ConversionCard({
                   key={format.value}
                   onClick={() => handleFormatClick(format.value)}
                   disabled={isDisabled}
-                  className={`flex flex-col items-center rounded-lg border px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wide transition-all ${
-                    isActive
+                  className={`flex flex-col items-center rounded-lg border px-2.5 py-1.5 text-[11px] font-medium uppercase tracking-wide transition-colors ${
+                    isTarget
                       ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : isSelected
-                        ? "border-violet-500/60 bg-violet-500/10 text-violet-600 dark:text-violet-400"
-                        : isSource
-                        ? "cursor-not-allowed border-border/40 bg-muted/40 text-muted-foreground/40"
-                        : isConverting
-                          ? "cursor-not-allowed border-border/40 bg-muted/30 text-muted-foreground/60"
-                          : "cursor-pointer border-border/60 bg-muted/30 text-foreground hover:border-violet-400/60 hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400"
+                      : isSource
+                      ? "cursor-not-allowed border-border/40 bg-muted/40 text-muted-foreground/40"
+                      : isConverting
+                        ? "cursor-not-allowed border-border/60 bg-muted/30 text-foreground"
+                        : "cursor-pointer border-border/60 bg-muted/30 text-foreground hover:border-violet-400/60 hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400"
                   }`}
                 >
                   <span>{format.label}</span>
                   {!isSource && (
                     <span className="text-[8px] font-normal normal-case tracking-normal opacity-60">
-                      {item.sizesLoading ? "…" : chipSize != null ? formatFileSize(chipSize) : null}
+                      {chipSize != null ? formatFileSize(chipSize) : item.sizesLoading ? "…" : null}
                     </span>
                   )}
                 </button>
               );
             })}
           </div>
-
-          {/* Progress */}
-          {isConverting && (
-            <div className="mt-3 border-t border-border/40 pt-3">
-              <Progress value={item.progress} className="h-1.5" />
-              <p className="mt-1.5 text-[11px] text-muted-foreground">
-                Converting to {item.targetFormat.toUpperCase()}… {item.progress}%
-              </p>
-            </div>
-          )}
 
           {/* Error */}
           {isError && (
@@ -223,13 +215,8 @@ export function ConversionCard({
         </div>
 
         {/* ── Right column: result (when done) ── */}
-        {isDone && item.outputUrl && (
-          <motion.div
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className="flex w-1/2 flex-col gap-3 border-l border-border/40 pl-4"
-          >
+        {displayOutputUrl && (
+          <div className="flex w-1/2 flex-col gap-3 border-l border-border/40 pl-4">
             {/* Result header — mirrors source layout */}
             <div className="flex items-start gap-3">
               {item.thumbnailUrl ? (
@@ -258,14 +245,14 @@ export function ConversionCard({
                   </Badge>
                 </div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {item.sizesLoading
-                    ? <span className="inline-block h-3 w-10 animate-pulse rounded bg-muted align-middle" />
-                    : item.outputSize != null
+                  <span className="inline-block min-w-[60px]">
+                    {item.outputSize != null
                       ? formatFileSize(item.outputSize)
-                    : item.formatSizes[item.targetFormat] != null
-                      ? formatFileSize(item.formatSizes[item.targetFormat])
-                      : <span className="inline-block h-3 w-10 animate-pulse rounded bg-muted" />
-                  } · {getCategoryLabel(item.category)}
+                      : item.formatSizes[item.targetFormat] != null
+                        ? formatFileSize(item.formatSizes[item.targetFormat])
+                        : <span className="inline-block h-3 w-10 animate-pulse rounded bg-muted align-middle" />
+                    }
+                  </span> · {getCategoryLabel(item.category)}
                 </p>
               </div>
             </div>
@@ -295,13 +282,13 @@ export function ConversionCard({
 
             {/* Download button */}
             <a
-              href={item.outputUrl}
+              href={displayOutputUrl ?? undefined}
               download={`${item.file.name.replace(/\.[^.]+$/, "")}.${item.targetFormat}`}
               className="mt-auto inline-flex h-8 w-fit cursor-pointer items-center gap-1.5 self-end rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/80"
             >
               <Download className="h-3.5 w-3.5" /> Download
             </a>
-          </motion.div>
+          </div>
         )}
       </div>
 

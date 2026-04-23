@@ -207,7 +207,6 @@ export function useConverter() {
       if (overrideQuality !== undefined) snapshot.quality = overrideQuality;
 
       // Persist overrides + set converting
-      if (snapshot.outputUrl) URL.revokeObjectURL(snapshot.outputUrl);
       setItems((prev) =>
         prev.map((i) =>
           i.id === id
@@ -218,7 +217,7 @@ export function useConverter() {
                 status: "converting" as const,
                 progress: 0,
                 error: null,
-                outputUrl: null,
+                outputUrl: i.outputUrl,
                 outputSize: null,
               }
             : i,
@@ -252,6 +251,11 @@ export function useConverter() {
           url = await convertGeneric(snapshot, onProgress);
           const resp = await fetch(url);
           outputSize = (await resp.blob()).size;
+        }
+
+        // Revoke old URL before setting new one
+        if (snapshot.outputUrl) {
+          URL.revokeObjectURL(snapshot.outputUrl);
         }
 
         setItems((prev) => prev.map((i) => {

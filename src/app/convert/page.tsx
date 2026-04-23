@@ -50,7 +50,7 @@ export default function ConvertPage() {
     multiple: true,
   });
 
-  const hasDone = items.some((i) => i.status === "done");
+  const hasDone = items.some((i) => i.outputUrl != null);
 
   return (
     <div className="relative flex flex-1 flex-col">
