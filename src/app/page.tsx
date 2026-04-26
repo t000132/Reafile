@@ -13,8 +13,6 @@ import {
   Sparkles,
   Eraser,
   Shield,
-  Zap,
-  Globe,
   Lock,
 } from "lucide-react";
 import Link from "next/link";
@@ -426,26 +424,191 @@ export default function Home() {
             })}
           </div>
 
-          {/* ── Feature chips — inline, no scroll ──────────── */}
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { icon: Lock, label: "100% Private", color: "text-violet-500" },
-              { icon: Zap, label: "Lightning Fast", color: "text-blue-500" },
-              { icon: Globe, label: "Works Offline", color: "text-emerald-500" },
-              { icon: Shield, label: "Free Forever", color: "text-amber-500" },
-            ].map(({ icon: Icon, label, color }) => (
+          {/* ── Pricing Section ──────────────────────────────── */}
+          <motion.div
+            id="pricing"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="mt-24 scroll-mt-24"
+          >
+            <div className="mb-12 text-center">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Simple, transparent{" "}
+                <span className="bg-gradient-to-r from-violet-500 via-blue-500 to-emerald-500 bg-clip-text text-transparent">
+                  pricing
+                </span>
+              </h2>
+              <p className="mt-3 text-base text-muted-foreground">
+                Choose the plan that works best for you across all Reawon apps
+              </p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Free Plan */}
               <motion.div
-                key={label}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.5 }}
-                className="flex items-center justify-center gap-2 rounded-xl border border-border/50 bg-muted/30 px-4 py-3"
+                transition={{ delay: 0.7 }}
+                className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-8"
               >
-                <Icon className={`h-4 w-4 shrink-0 ${color}`} />
-                <span className="text-sm font-medium">{label}</span>
+                <h3 className="text-2xl font-semibold">Free</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Perfect for trying out Reafile
+                </p>
+                <div className="mt-6">
+                  <span className="text-4xl font-bold">$0</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+                <button className="mt-6 w-full rounded-lg border-2 border-border/60 bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-muted/50">
+                  Current Plan
+                </button>
+                <ul className="mt-8 space-y-3">
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>10 conversions per day</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>120+ file formats</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Files up to 10MB</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>100% private & secure</span>
+                  </li>
+                </ul>
               </motion.div>
-            ))}
-          </div>
+
+              {/* Premium Monthly */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="relative rounded-2xl border-2 border-violet-500/50 bg-gradient-to-br from-violet-500/5 via-blue-500/5 to-emerald-500/5 backdrop-blur-sm p-8 shadow-lg"
+              >
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-violet-500 to-blue-500 px-3 py-1 text-xs font-medium text-white">
+                  Popular
+                </div>
+                <h3 className="text-2xl font-semibold">Premium</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  For power users and professionals
+                </p>
+                <div className="mt-6">
+                  <span className="text-4xl font-bold">$9.99</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+                <button className="mt-6 w-full rounded-lg bg-gradient-to-r from-violet-500 to-blue-500 px-4 py-2 text-sm font-medium text-white transition-all hover:from-violet-600 hover:to-blue-600 hover:shadow-lg">
+                  Get Premium
+                </button>
+                <ul className="mt-8 space-y-3">
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span className="font-medium">Unlimited conversions</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>120+ file formats</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Files up to 500MB</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Priority processing</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Batch conversion</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Premium support</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span className="font-medium">Premium on all Reawon apps</span>
+                  </li>
+                </ul>
+              </motion.div>
+
+              {/* Premium Yearly */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+                className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-8"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-2xl font-semibold">Premium</h3>
+                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    Save 17%
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Best value for committed users
+                </p>
+                <div className="mt-6">
+                  <span className="text-4xl font-bold">$99.99</span>
+                  <span className="text-muted-foreground">/year</span>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  $8.33/month when billed annually
+                </p>
+                <button className="mt-6 w-full rounded-lg bg-gradient-to-r from-violet-500 to-blue-500 px-4 py-2 text-sm font-medium text-white transition-all hover:from-violet-600 hover:to-blue-600 hover:shadow-lg">
+                  Get Premium
+                </button>
+                <ul className="mt-8 space-y-3">
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span className="font-medium">Unlimited conversions</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>120+ file formats</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Files up to 500MB</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Priority processing</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Batch conversion</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span>Premium support</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Shield className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
+                    <span className="font-medium">Premium on all Reawon apps</span>
+                  </li>
+                </ul>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+              className="mt-8 text-center"
+            >
+              <p className="text-sm text-muted-foreground">
+                All premium plans include access to premium features across{" "}
+                <span className="font-medium text-foreground">Reafile</span>,{" "}
+                <span className="font-medium text-foreground">Polywon</span>, and{" "}
+                <span className="font-medium text-foreground">Reawon</span>.
+              </p>
+            </motion.div>
+          </motion.div>
         </motion.div>
       </div>
     </div>

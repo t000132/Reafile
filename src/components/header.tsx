@@ -21,6 +21,7 @@ import {
 export function Header() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [logoHovered, setLogoHovered] = useState(false);
   const { user, signOut, loading } = useAuth();
 
   const handleSignIn = () => {
@@ -41,51 +42,75 @@ export function Header() {
         className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl"
       >
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="text-lg font-semibold tracking-tight">Reafile</span>
-          </Link>
+          {/* Logo with hover dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setLogoHovered(true)}
+            onMouseLeave={() => setLogoHovered(false)}
+          >
+            <Link href="/" className="flex items-center gap-2.5">
+              <span className="text-lg font-semibold tracking-tight">Reafile</span>
+            </Link>
+            
+            {/* App Links Dropdown */}
+            {logoHovered && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute left-0 top-full mt-2 w-48 rounded-xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-lg"
+              >
+                <div className="flex flex-col p-2">
+                  <Link
+                    href="https://reawon.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
+                  >
+                    <Image
+                      src="/reawon_logo_black.png"
+                      alt="Reawon"
+                      width={18}
+                      height={18}
+                      className="block dark:hidden"
+                    />
+                    <Image
+                      src="/reawon_logo_white.png"
+                      alt="Reawon"
+                      width={18}
+                      height={18}
+                      className="hidden dark:block"
+                    />
+                    <span className="flex-1 font-[family-name:var(--font-conthrax)] text-foreground">Reawon</span>
+                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Link>
+                  <Link
+                    href="https://polywon.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
+                  >
+                    <Image
+                      src="/polywon_logo.png"
+                      alt="Polywon"
+                      width={18}
+                      height={18}
+                      className="rounded"
+                    />
+                    <span className="flex-1 font-[family-name:var(--font-poppins)] text-foreground">Polywon</span>
+                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </div>
 
           {/* Links + Theme toggle */}
           <nav className="flex items-center gap-3 text-sm text-muted-foreground">
             <Link
-              href="https://reawon.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden items-center gap-1.5 transition-colors hover:text-foreground sm:flex"
+              href="/#pricing"
+              className="transition-colors hover:text-foreground"
             >
-              <Image
-                src="/reawon_logo_black.png"
-                alt="Reawon"
-                width={20}
-                height={20}
-                className="block dark:hidden"
-              />
-              <Image
-                src="/reawon_logo_white.png"
-                alt="Reawon"
-                width={20}
-                height={20}
-                className="hidden dark:block"
-              />
-              <span className="font-[family-name:var(--font-conthrax)]">Reawon</span>
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-            <Link
-              href="https://polywon.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 transition-colors hover:text-foreground"
-            >
-              <Image
-                src="/polywon_logo.png"
-                alt="Polywon"
-                width={20}
-                height={20}
-                className="rounded"
-              />
-              <span className="hidden font-[family-name:var(--font-poppins)] sm:inline">Polywon</span>
-              <ArrowUpRight className="h-3.5 w-3.5" />
+              Pricing
             </Link>
             <div className="mx-1 h-4 w-px bg-border" />
             <ThemeToggle />
