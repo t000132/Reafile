@@ -64,3 +64,37 @@ export function trackConversionFinished(
     success,
   });
 }
+
+export function trackCompressionStarted(
+  sourceFormat: string,
+  category: string,
+  level: number,
+) {
+  posthog.capture("compression_started", {
+    source_format: sourceFormat,
+    category,
+    level,
+  });
+}
+
+export function trackCompressionFinished(
+  sourceFormat: string,
+  category: string,
+  level: number,
+  originalBytes: number,
+  compressedBytes: number,
+  durationMs: number,
+  success: boolean,
+) {
+  posthog.capture("compression_finished", {
+    source_format: sourceFormat,
+    category,
+    level,
+    original_bytes: originalBytes,
+    compressed_bytes: compressedBytes,
+    ratio: originalBytes > 0 ? compressedBytes / originalBytes : 1,
+    saved_bytes: originalBytes - compressedBytes,
+    duration_ms: durationMs,
+    success,
+  });
+}

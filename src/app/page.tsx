@@ -42,7 +42,7 @@ const features: FeatureCard[] = [
     icon: Sparkles,
     color: "from-blue-500 to-cyan-600",
     href: "/compress",
-    available: false,
+    available: true,
   },
   {
     title: "Resize",
