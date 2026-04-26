@@ -48,7 +48,19 @@ export function Header() {
             onMouseEnter={() => setLogoHovered(true)}
             onMouseLeave={() => setLogoHovered(false)}
           >
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link 
+              href="/" 
+              className="flex items-center gap-2.5"
+              onClick={(e) => {
+                if (window.location.pathname === "/") {
+                  e.preventDefault();
+                  const mainElement = document.querySelector('main');
+                  if (mainElement) {
+                    mainElement.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }
+              }}
+            >
               <span className="text-lg font-semibold tracking-tight">Reafile</span>
             </Link>
             
