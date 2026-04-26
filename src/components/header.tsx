@@ -57,48 +57,52 @@ export function Header() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute left-0 top-full mt-2 w-48 rounded-xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-lg"
+                className="absolute -left-4 top-full -mt-1"
               >
-                <div className="flex flex-col p-2">
-                  <Link
-                    href="https://reawon.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
-                  >
-                    <Image
-                      src="/reawon_logo_black.png"
-                      alt="Reawon"
-                      width={18}
-                      height={18}
-                      className="block dark:hidden"
-                    />
-                    <Image
-                      src="/reawon_logo_white.png"
-                      alt="Reawon"
-                      width={18}
-                      height={18}
-                      className="hidden dark:block"
-                    />
-                    <span className="flex-1 font-[family-name:var(--font-conthrax)] text-foreground">Reawon</span>
-                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Link>
-                  <Link
-                    href="https://polywon.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
-                  >
-                    <Image
-                      src="/polywon_logo.png"
-                      alt="Polywon"
-                      width={18}
-                      height={18}
-                      className="rounded"
-                    />
-                    <span className="flex-1 font-[family-name:var(--font-poppins)] text-foreground">Polywon</span>
-                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Link>
+                {/* Invisible bridge to prevent gap - extends upward slightly */}
+                <div className="h-3 w-full pointer-events-auto" />
+                <div className="w-48 rounded-xl border border-border/50 bg-background/95 backdrop-blur-xl shadow-lg pointer-events-auto">
+                  <div className="flex flex-col p-2">
+                    <Link
+                      href="https://reawon.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
+                    >
+                      <Image
+                        src="/reawon_logo_black.png"
+                        alt="Reawon"
+                        width={18}
+                        height={18}
+                        className="block dark:hidden"
+                      />
+                      <Image
+                        src="/reawon_logo_white.png"
+                        alt="Reawon"
+                        width={18}
+                        height={18}
+                        className="hidden dark:block"
+                      />
+                      <span className="flex-1 font-[family-name:var(--font-conthrax)] text-foreground">Reawon</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Link>
+                    <Link
+                      href="https://polywon.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
+                    >
+                      <Image
+                        src="/polywon_logo.png"
+                        alt="Polywon"
+                        width={18}
+                        height={18}
+                        className="rounded"
+                      />
+                      <span className="flex-1 font-[family-name:var(--font-poppins)] text-foreground">Polywon</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    </Link>
+                  </div>
                 </div>
               </motion.div>
             )}
