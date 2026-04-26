@@ -79,7 +79,7 @@ export default function ConvertPage() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="gap-2 text-muted-foreground hover:text-foreground"
+                  className="gap-2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to Hub

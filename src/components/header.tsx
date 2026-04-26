@@ -156,14 +156,14 @@ export function Header() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 px-3 text-sm font-medium"
+                      className="h-8 px-3 text-sm font-medium cursor-pointer"
                       onClick={handleSignIn}
                     >
                       Log in
                     </Button>
                     <Button
                       size="sm"
-                      className="h-8 px-3 text-sm font-medium bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600"
+                      className="h-8 px-3 text-sm font-medium bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600 cursor-pointer"
                       onClick={handleSignUp}
                     >
                       Sign up
