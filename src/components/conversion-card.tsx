@@ -246,11 +246,13 @@ export function ConversionCard({
                 </div>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   <span className="inline-block min-w-[60px]">
-                    {item.outputSize != null
-                      ? formatFileSize(item.outputSize)
-                      : item.formatSizes[item.targetFormat] != null
-                        ? formatFileSize(item.formatSizes[item.targetFormat])
-                        : <span className="inline-block h-3 w-10 animate-pulse rounded bg-muted align-middle" />
+                    {item.sizesLoading || isConverting
+                      ? <span className="inline-block h-3 w-12 animate-pulse rounded bg-muted align-middle" />
+                      : item.outputSize != null
+                        ? formatFileSize(item.outputSize)
+                        : item.formatSizes[item.targetFormat] != null
+                          ? formatFileSize(item.formatSizes[item.targetFormat])
+                          : <span className="inline-block h-3 w-12 animate-pulse rounded bg-muted align-middle" />
                     }
                   </span> · {getCategoryLabel(item.category)}
                 </p>

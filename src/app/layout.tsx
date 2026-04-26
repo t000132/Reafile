@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/components/auth-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import "./globals.css";
@@ -36,11 +37,13 @@ export default function RootLayout({
       <body className="flex h-dvh flex-col bg-background text-foreground overflow-x-hidden overflow-y-hidden">
         <ThemeProvider>
           <PostHogProvider>
-            <Header />
-            <main className="flex flex-1 flex-col overflow-y-auto">
-              {children}
-              <Footer />
-            </main>
+            <AuthProvider>
+              <Header />
+              <main className="flex flex-1 flex-col overflow-y-auto">
+                {children}
+                <Footer />
+              </main>
+            </AuthProvider>
           </PostHogProvider>
         </ThemeProvider>
       </body>

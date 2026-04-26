@@ -127,10 +127,6 @@ export function useConverter() {
       const category = detectCategory(file.type, file.name);
       const sourceExt = getExtension(file.name);
       const available = getTargetFormats(category);
-      const defaultTarget =
-        available.find((f) => f.value !== sourceExt)?.value ??
-        available[0]?.value ??
-        "png";
 
       trackFileUploaded(file.name, file.type, file.size);
 
@@ -139,7 +135,7 @@ export function useConverter() {
         file,
         category,
         sourceExtension: sourceExt,
-        targetFormat: defaultTarget,
+        targetFormat: "",
         availableFormats: available,
         status: "pending" as const,
         progress: 0,
@@ -161,11 +157,6 @@ export function useConverter() {
         recomputeImageSizes(item, item.quality);
       }
     }
-
-    // Auto-convert each new file to its default target format
-    for (const item of newItems) {
-      convertItemRef.current(item.id);
-    }
   }, [recomputeImageSizes]);
 
   // ── Change target format ─────────────────────────────────────────
@@ -186,7 +177,7 @@ export function useConverter() {
 
     // Show loader immediately while size estimates refresh.
     if (item.category === "image") {
-      updateItem(id, { quality, sizesLoading: true });
+      updateItem(id, { quality, sizesLoading: true, outputSize: null });
       void recomputeImageSizes(item, quality);
       return;
     }
