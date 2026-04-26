@@ -122,12 +122,19 @@ export function Header() {
 
           {/* Links + Theme toggle */}
           <nav className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Link
-              href="/#pricing"
-              className="transition-colors hover:text-foreground"
+            <button
+              onClick={() => {
+                const pricingSection = document.getElementById('pricing');
+                const mainElement = document.querySelector('main');
+                if (pricingSection && mainElement) {
+                  const offset = pricingSection.offsetTop;
+                  mainElement.scrollTo({ top: offset, behavior: 'smooth' });
+                }
+              }}
+              className="transition-colors hover:text-foreground cursor-pointer bg-transparent border-none text-sm"
             >
               Pricing
-            </Link>
+            </button>
             <div className="mx-1 h-4 w-px bg-border" />
             <ThemeToggle />
             <div className="mx-1 h-4 w-px bg-border" />
