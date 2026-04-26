@@ -350,7 +350,7 @@ export default function Home() {
       </div>
 
       {/* ── Main content — fills viewport ────────────────────── */}
-      <div className="flex flex-1 flex-col items-center px-4 py-8 sm:px-6 overflow-y-auto">
+      <div className="flex flex-1 flex-col items-center px-4 py-8 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
